@@ -1,0 +1,13 @@
+name: show a full fledged Terraform CI/CD pipeline with GH action
+
+env:
+  working-directory: ./atul/Example
+
+
+on:
+  push:   
+    branches: ["main", "master"]
+  pull_request: 
+    branches: ["main", "master"]
+
+  workflow_dispatch:  
