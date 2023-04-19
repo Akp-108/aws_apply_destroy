@@ -88,7 +88,7 @@ on:
 env:
   # aws_region: us-east-1
 #   aws_region: ${{ github.event.inputs.region }}
-  BUCKET: pitambar-bucket
+  BUCKET: atul-test-bucket001
   TFSTATE_FILE: Terraform.tfstate
 
 jobs:
