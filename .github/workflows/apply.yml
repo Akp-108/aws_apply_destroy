@@ -1,8 +1,69 @@
-name: Ec2 apply
+# name: Ec2 apply
 
 # env:
 #   working-directory: ./atul/Example
 
+
+# on:
+#   push:   
+#     branches: ["main", "master"]
+#   pull_request: 
+#     branches: ["main", "master"]
+
+#   workflow_dispatch:  
+
+
+# jobs:
+#   pipeline:
+#     runs-on: ubuntu-latest
+#      env:
+#        AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID }}
+#        AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+#        AWS_SESSION_TOKEN: ${{secrets.AWS_SESSION_TOKEN}}
+#        AWS_DEFAULT_REGION: us-east-1
+      
+#     steps:
+#       - uses: actions/checkout@v3
+      
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v2 
+
+#       - name: Terraform fmt
+#         id: fmt
+#         run: terraform  fmt 
+      
+#       - name: Terraform Init
+#         id: init
+#         run: terraform init
+
+#       - name: Terraform Validate
+#         id: validate
+#         run: terraform validate 
+
+#       - name: Terraform Plan
+#         id: plan
+#         run: terraform plan
+      
+#       - name: Terrafom Plan status
+#         if: steps.plan.outcome == 'failure'
+#         run: echo somthing error place check the code once!!!!!!
+
+#       - name: Terraform apply
+#         id: apply
+#         if: steps.plan.outcome != 'failure'
+#         run: terraform apply -auto-approve
+#         working-directory:   ${{env.working-directory}}
+
+
+
+name:  Terraform init
 
 on:
   push:   
@@ -12,54 +73,66 @@ on:
 
   workflow_dispatch:  
 
+# on:
+  # push:
+  #   branch:
+  #     - master
+
+#   workflow_dispatch:
+#     inputs : 
+#       region :
+#         description: "Enter your region : "
+#         required: true  
+#         type: string 
+
+env:
+  # aws_region: us-east-1
+#   aws_region: ${{ github.event.inputs.region }}
+  BUCKET: pitambar-bucket
+  TFSTATE_FILE: Terraform.tfstate
 
 jobs:
-  pipeline:
+  terraform-init:
+    name: Terraform Validation and Build
     runs-on: ubuntu-latest
-     env:
-       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID }}
-       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-       AWS_SESSION_TOKEN: ${{secrets.AWS_SESSION_TOKEN}}
-       AWS_DEFAULT_REGION: us-east-1
-      
+
     steps:
-      - uses: actions/checkout@v3
-      
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-east-1
+    - uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2 
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: "us-east-1"
+#         aws-region: ${{ env.aws_region }}
 
-      - name: Terraform fmt
-        id: fmt
-        run: terraform  fmt 
-      
-      - name: Terraform Init
-        id: init
-        run: terraform init
 
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate 
+    - name: Terraform hashicorp setup
+      uses: hashicorp/setup-terraform@v2
+    
+    - name: Terraform init, plan and apply
+      run: |
+        cd module
 
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan
-      
-      - name: Terrafom Plan status
-        if: steps.plan.outcome == 'failure'
-        run: echo somthing error place check the code once!!!!!!
+        echo 'pwd'
+        echo "** Running Terraform init **"
+        terraform init -reconfigure -backend-config="bucket=${{ env.BUCKET}}" -backend-config="key=${{ env.TFSTATE_FILE }}" -backend-config="region=${{ env.aws_region }}"
 
-#       - name: Terraform apply
-#         id: apply
-#         if: steps.plan.outcome != 'failure'
-#         run: terraform apply -auto-approve
-#         working-directory:   ${{env.working-directory}}
+    - name: terraform plan
+      run: |
+        cd module
+        terraform plan
+
+#     - name: terraform apply
+#       run: |
+#         cd module 
+#         terraform apply -auto-approve
+       
+
+
+
 
 
 
