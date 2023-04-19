@@ -5,8 +5,8 @@ on:
 
 env:
   aws-region: us-east-1
-  aws_s3_bucket: priyanka-backend-bucket
-  tfstate_file: atul-test-bucket001
+  aws_s3_bucket: atul-test-bucket001
+  tfstate_file: terraState.tfstate
 
 jobs:
   terraformInit:
